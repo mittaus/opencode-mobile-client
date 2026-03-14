@@ -1,0 +1,46 @@
+# Entornos de desarrollo e IDEs
+*.iml
+.gradle/
+.idea/
+.vscode/
+
+# Build generados por Gradle y Android
+build/
+*/build/
+*/*/build/
+captures/
+.externalNativeBuild
+.cxx/
+local.properties
+
+# Archivos específicos de Kotlin Multiplatform (KMP)
+.kotlin/
+.swiftpm/
+
+# Archivos temporales y de sistema
+.DS_Store
+Thumbs.db
+*.swp
+*~
+*.orig
+*.rej
+
+# Archivos de la nube o caches
+node_modules/
+.npm/
+.yarn/
+
+# Archivos de keys, configuraciones sensibles o auth
+*.keystore
+*.jks
+release.properties
+google-services.json
+firebase_app_id_file.json
+*.env
+*.env.*
+!.env.example
+
+# Archivos temporales de log
+logs/
+*.log
+.claude

@@ -1,0 +1,49 @@
+# ─── IDEs ─────────────────────────────────────────────────────────────────────
+*.iml
+.gradle/
+.idea/
+.vscode/
+
+# ─── Build outputs ────────────────────────────────────────────────────────────
+build/
+*/build/
+*/*/build/
+captures/
+.externalNativeBuild
+.cxx/
+
+# ─── Kotlin Multiplatform ─────────────────────────────────────────────────────
+.kotlin/
+.swiftpm/
+
+# ─── Android local config ─────────────────────────────────────────────────────
+local.properties
+
+# ─── Go binaries ──────────────────────────────────────────────────────────────
+opencode-server-gateway/opencode-gateway-linux
+opencode-server-gateway/opencode-gateway.exe
+opencode-server-gateway/*.exe
+
+# ─── Secrets y configuración sensible ─────────────────────────────────────────
+*.env
+*.env.*
+!.env.example
+*.keystore
+*.jks
+release.properties
+google-services.json
+firebase_app_id_file.json
+
+# ─── Sistema y temporales ─────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*~
+*.orig
+*.rej
+logs/
+*.log
+node_modules/
+.npm/
+.yarn/
+.claude

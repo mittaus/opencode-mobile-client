@@ -1,0 +1,48 @@
+﻿<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:fillColor="#F2C14E"
+        android:pathData="M30,14h18a4,4 0,0 1,4 4v14a4,4 0,0 1,-4 4H30a4,4 0,0 1,-4 -4V18a4,4 0,0 1,4 -4z" />
+    <path
+        android:fillColor="#F2C14E"
+        android:pathData="M60,14h18a4,4 0,0 1,4 4v14a4,4 0,0 1,-4 4H60a4,4 0,0 1,-4 -4V18a4,4 0,0 1,4 -4z" />
+
+    <path
+        android:fillColor="#F2C14E"
+        android:pathData="M14,30h14a4,4 0,0 1,4 4v18a4,4 0,0 1,-4 4H14a4,4 0,0 1,-4 -4V34a4,4 0,0 1,4 -4z" />
+    <path
+        android:fillColor="#F2C14E"
+        android:pathData="M80,30h14a4,4 0,0 1,4 4v18a4,4 0,0 1,-4 4H80a4,4 0,0 1,-4 -4V34a4,4 0,0 1,4 -4z" />
+
+    <path
+        android:fillColor="#F2C14E"
+        android:pathData="M30,72h18a4,4 0,0 1,4 4v14a4,4 0,0 1,-4 4H30a4,4 0,0 1,-4 -4V76a4,4 0,0 1,4 -4z" />
+    <path
+        android:fillColor="#F2C14E"
+        android:pathData="M60,72h18a4,4 0,0 1,4 4v14a4,4 0,0 1,-4 4H60a4,4 0,0 1,-4 -4V76a4,4 0,0 1,4 -4z" />
+
+    <path
+        android:fillColor="#F2C14E"
+        android:pathData="M38,30h32a4,4 0,0 1,4 4v40a4,4 0,0 1,-4 4H38a4,4 0,0 1,-4 -4V34a4,4 0,0 1,4 -4z" />
+
+    <path
+        android:fillColor="#FFD978"
+        android:pathData="M42,34h24a4,4 0,0 1,4 4v32a4,4 0,0 1,-4 4H42a4,4 0,0 1,-4 -4V38a4,4 0,0 1,4 -4z" />
+
+    <path
+        android:fillColor="#0D2B45"
+        android:pathData="M47,43h4a2,2 0,0 1,2 2v4a2,2 0,0 1,-2 2h-4a2,2 0,0 1,-2 -2v-4a2,2 0,0 1,2 -2z" />
+    <path
+        android:fillColor="#0D2B45"
+        android:pathData="M57,43h4a2,2 0,0 1,2 2v4a2,2 0,0 1,-2 2h-4a2,2 0,0 1,-2 -2v-4a2,2 0,0 1,2 -2z" />
+    <path
+        android:fillColor="#0D2B45"
+        android:pathData="M47,55h4a2,2 0,0 1,2 2v4a2,2 0,0 1,-2 2h-4a2,2 0,0 1,-2 -2v-4a2,2 0,0 1,2 -2z" />
+    <path
+        android:fillColor="#0D2B45"
+        android:pathData="M57,55h4a2,2 0,0 1,2 2v4a2,2 0,0 1,-2 2h-4a2,2 0,0 1,-2 -2v-4a2,2 0,0 1,2 -2z" />
+</vector>
