@@ -53,6 +53,8 @@ class ChatViewModel(
 
     private val prefKeyModel    = "session_model_$sessionId"
     private val prefKeyProvider = "session_provider_$sessionId"
+    private val prefKeyLastModel    = "last_model"
+    private val prefKeyLastProvider = "last_provider"
 
     private val _state = MutableStateFlow(ChatUiState())
     val state: StateFlow<ChatUiState> = _state.asStateFlow()
@@ -78,12 +80,10 @@ class ChatViewModel(
                 }
             }
             // 2. Fall back to locally saved preference (e.g. user had previously chosen a model)
-            val model    = prefs.getString(prefKeyModel)
-            val provider = prefs.getString(prefKeyProvider)
-            if (!model.isNullOrBlank()) {
-                _state.update { it.copy(selectedModel = model, selectedProvider = provider) }
-                Log.d(TAG, "loadSessionModel ✓ from prefs: model=$model provider=$provider")
-            }
+            val model    = prefs.getString(prefKeyModel) ?: prefs.getString(prefKeyLastModel) ?: "big-pickle"
+            val provider = prefs.getString(prefKeyProvider) ?: prefs.getString(prefKeyLastProvider) ?: "opencode"
+            _state.update { it.copy(selectedModel = model, selectedProvider = provider) }
+            Log.d(TAG, "loadSessionModel ✓ from prefs: model=$model provider=$provider")
         }
     }
 
@@ -343,6 +343,8 @@ class ChatViewModel(
         viewModelScope.launch {
             prefs.putString(prefKeyModel, modelId)
             prefs.putString(prefKeyProvider, providerId)
+            prefs.putString(prefKeyLastModel, modelId)
+            prefs.putString(prefKeyLastProvider, providerId)
             Log.d(TAG, "setModel saved model=$modelId provider=$providerId")
         }
     }
