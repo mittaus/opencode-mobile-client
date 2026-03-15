@@ -10,46 +10,30 @@ import com.opencode.shared.domain.repository.ProjectRepository
 class ProjectRepositoryImpl(private val api: OpenCodeApi) : ProjectRepository {
 
     override suspend fun getAvailableProjects(): Result<List<AvailableProject>> = runCatching {
-        // 1. Real projects: GET /project, filter out "global"
+        // 1. Real projects: GET /project, deduplicate by worktree path.
+        // OpenCode can return the same directory twice: once with a human-readable id
+        // (registered manually) and once with a git-hash id (auto-detected). Keep the
+        // human-readable one by sorting so non-hex ids come first, then distinctBy worktree.
         val registeredProjects: List<AvailableProject> = try {
+            val hexPattern = Regex("^[0-9a-f]{40}$")
             api.getProjects()
-                .filter { it.id != "global" }
+                .filter { it.path.isNotBlank() }
+                .sortedBy { if (hexPattern.matches(it.id)) 1 else 0 }  // prefer named ids
                 .map { dto ->
                     AvailableProject(
-                        path = dto.path,
-                        worktree = dto.path,
+                        path = dto.path.trimEnd('/'),
+                        worktree = dto.path.trimEnd('/'),
                         projectId = dto.id,
-                        isRegistered = true,
+                        isRegistered = dto.id != "global",
                     )
                 }
+                .distinctBy { it.worktree }
         } catch (e: Exception) {
             println("[ProjectRepo] getProjects ✗ ${e.message}")
             emptyList()
         }
 
-        // Collect registered worktrees for deduplication
-        val registeredWorktrees = registeredProjects.map { it.worktree }.toSet()
-
-        // 2. Session directories: GET /session where projectID == "global"
-        val sessionProjects: List<AvailableProject> = try {
-            api.getSessions()
-                .filter { it.projectId == "global" && it.directory.isNotBlank() }
-                .map { it.directory }
-                .distinct()
-                .filter { dir -> dir !in registeredWorktrees }
-                .map { dir ->
-                    AvailableProject(
-                        path = dir,
-                        worktree = dir,
-                        isRegistered = false,
-                    )
-                }
-        } catch (e: Exception) {
-            println("[ProjectRepo] getSessions ✗ ${e.message}")
-            emptyList()
-        }
-
-        registeredProjects + sessionProjects
+        registeredProjects
     }
 
     override suspend fun getProjects(): Result<List<Project>> = runCatching {

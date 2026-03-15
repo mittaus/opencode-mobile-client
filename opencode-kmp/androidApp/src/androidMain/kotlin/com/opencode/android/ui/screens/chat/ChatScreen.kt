@@ -20,7 +20,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
 import android.util.Base64
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import com.opencode.android.ui.components.*
 import com.opencode.android.ui.theme.*
 import com.opencode.shared.domain.model.*
@@ -206,7 +208,7 @@ private fun ChatHeader(
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         Box(Modifier.size(5.dp).background(Orange, RoundedCornerShape(50)))
                         Text(
-                            state.selectedModel ?: "anthropic / claude-sonnet-4-5",
+                            state.selectedModel ?: "Seleccionar modelo",
                             style = MaterialTheme.typography.labelSmall,
                             color = TextSecond,
                             maxLines = 1,
@@ -354,6 +356,7 @@ private fun StreamingBubble(text: String) {
     }
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun MessageRow(
     message: Message,
@@ -361,16 +364,47 @@ private fun MessageRow(
     modifier: Modifier = Modifier,
 ) {
     val isUser = message.role == MessageRole.USER
+    val clipboard = LocalClipboardManager.current
+    var showCopied by remember { mutableStateOf(false) }
+
+    // Full text content of the message for copying
+    val fullText = remember(message.parts, streamingOverlay) {
+        val parts = message.parts.ifEmpty {
+            if (streamingOverlay != null) listOf(MessagePart.Text(streamingOverlay)) else emptyList()
+        }
+        parts.filterIsInstance<MessagePart.Text>().joinToString("\n") { it.text }
+    }
+
+    LaunchedEffect(showCopied) {
+        if (showCopied) {
+            kotlinx.coroutines.delay(1500)
+            showCopied = false
+        }
+    }
+
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = if (isUser) Alignment.End else Alignment.Start,
     ) {
-        Text(
-            if (isUser) "tú" else "opencode",
-            style = MaterialTheme.typography.labelSmall,
-            color = TextThird,
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start,
             modifier = Modifier.padding(start = 4.dp, end = 4.dp, bottom = 4.dp),
-        )
+        ) {
+            if (!isUser && showCopied) {
+                Text("✓ Copiado", style = MaterialTheme.typography.labelSmall, color = Green)
+                Spacer(Modifier.width(6.dp))
+            }
+            Text(
+                if (isUser) "tú" else "opencode",
+                style = MaterialTheme.typography.labelSmall,
+                color = TextThird,
+            )
+            if (isUser && showCopied) {
+                Spacer(Modifier.width(6.dp))
+                Text("✓ Copiado", style = MaterialTheme.typography.labelSmall, color = Green)
+            }
+        }
         val isStreaming = message.parts.isEmpty() && streamingOverlay != null
         val partsToShow = message.parts.ifEmpty {
             if (streamingOverlay != null) listOf(MessagePart.Text(streamingOverlay)) else emptyList()
@@ -378,24 +412,23 @@ private fun MessageRow(
         partsToShow.forEach { part ->
             when (part) {
                 is MessagePart.Text -> {
+                    val bubbleShape = RoundedCornerShape(
+                        topStart = 16.dp, topEnd = 16.dp,
+                        bottomStart = if (isUser) 16.dp else 4.dp,
+                        bottomEnd = if (isUser) 4.dp else 16.dp,
+                    )
                     Box(
                         Modifier
-                            .background(
-                                if (isUser) GreenDim else CardDark,
-                                RoundedCornerShape(
-                                    topStart = 16.dp, topEnd = 16.dp,
-                                    bottomStart = if (isUser) 16.dp else 4.dp,
-                                    bottomEnd = if (isUser) 4.dp else 16.dp,
-                                ),
-                            )
-                            .border(
-                                1.dp,
-                                if (isUser) GreenMid else BorderDark,
-                                RoundedCornerShape(
-                                    topStart = 16.dp, topEnd = 16.dp,
-                                    bottomStart = if (isUser) 16.dp else 4.dp,
-                                    bottomEnd = if (isUser) 4.dp else 16.dp,
-                                ),
+                            .background(if (isUser) GreenDim else CardDark, bubbleShape)
+                            .border(1.dp, if (isUser) GreenMid else BorderDark, bubbleShape)
+                            .combinedClickable(
+                                onClick = {},
+                                onLongClick = {
+                                    if (fullText.isNotBlank()) {
+                                        clipboard.setText(AnnotatedString(fullText))
+                                        showCopied = true
+                                    }
+                                },
                             )
                             .padding(horizontal = 13.dp, vertical = 10.dp)
                             .widthIn(max = 300.dp),

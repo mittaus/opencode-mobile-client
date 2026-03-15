@@ -1,5 +1,6 @@
 package com.opencode.android.di
 
+import android.app.Application
 import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
 import com.opencode.android.ui.screens.chat.ChatViewModel
@@ -26,7 +27,7 @@ val androidModule = module {
     single { AndroidPreferencesStorage(get()) } bind PreferencesStorage::class
 
     // ViewModels
-    viewModelOf(::ConnectViewModel)
+    viewModel { ConnectViewModel(get<Application>(), get()) }
     viewModelOf(::StatsViewModel)
     viewModel { ProjectsViewModel(get(), get(), get()) }  // GetAvailableProjectsUseCase, RegisterProjectUseCase, OpenCodeApi
 
@@ -36,7 +37,7 @@ val androidModule = module {
         sessionId = sessionId,
         getMessages = get(), sendMessageAsync = get(), executeCommand = get(),
         abortSession = get(), revertMessage = get(), respondPermission = get(),
-        observeEvents = get(), prefs = get(), statsRepo = get(),
+        observeEvents = get(), getSessions = get(), prefs = get(), statsRepo = get(),
     )}
     viewModelOf(::FilesViewModel)
     viewModel { (sessionId: String, currentModelId: String) -> ModelsViewModel(sessionId, currentModelId, get()) }

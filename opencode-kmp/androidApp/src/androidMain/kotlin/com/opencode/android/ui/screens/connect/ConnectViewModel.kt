@@ -1,7 +1,11 @@
 package com.opencode.android.ui.screens.connect
 
+import android.app.Application
+import android.content.Intent
+import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.opencode.android.service.OpenCodeSseService
 import com.opencode.shared.data.remote.api.OpenCodeApi
 import com.opencode.shared.di.networkModule
 import com.opencode.shared.domain.model.ServerConnection
@@ -20,6 +24,7 @@ data class ConnectUiState(
 )
 
 class ConnectViewModel(
+    private val app: Application,
     private val connectionRepo: ConnectionRepository,
 ) : ViewModel() {
 
@@ -46,6 +51,31 @@ class ConnectViewModel(
                     }
                 }
             }
+        }
+    }
+
+    private fun startOrRestartSseService() {
+        val intent = Intent(app, OpenCodeSseService::class.java)
+        // If already running, send RESTART so it picks up the new network module.
+        // If not running, startForegroundService starts it fresh.
+        if (isServiceRunning()) {
+            // Already running — nothing to do, it keeps the process alive regardless
+            android.util.Log.d("OC-Connect", "SSE service already running")
+            return
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            app.startForegroundService(intent)
+        } else {
+            app.startService(intent)
+        }
+        android.util.Log.d("OC-Connect", "SSE service started")
+    }
+
+    private fun isServiceRunning(): Boolean {
+        val manager = app.getSystemService(android.app.ActivityManager::class.java)
+        @Suppress("DEPRECATION")
+        return manager.getRunningServices(Int.MAX_VALUE).any {
+            it.service.className == OpenCodeSseService::class.java.name
         }
     }
 
@@ -80,6 +110,7 @@ class ConnectViewModel(
                     api.close()
                     android.util.Log.d("OC-Connect", "startProcess result: started=$started")
                     _state.update { it.copy(isLoading = false) }
+                    startOrRestartSseService()
                     _navigateToProjects.emit(Unit)
                 },
                 onFailure = { e ->

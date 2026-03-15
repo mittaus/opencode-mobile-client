@@ -46,6 +46,7 @@ class ChatViewModel(
     private val revertMessage: RevertMessageUseCase,
     private val respondPermission: RespondPermissionUseCase,
     private val observeEvents: ObserveEventsUseCase,
+    private val getSessions: GetSessionsUseCase,
     private val prefs: PreferencesStorage,
     private val statsRepo: StatsRepository,
 ) : ViewModel() {
@@ -58,18 +59,30 @@ class ChatViewModel(
 
     init {
         Log.d(TAG, "init sessionId=$sessionId")
-        loadSavedModel()
+        loadSessionModel()
         loadMessages()
         observeSseEvents()
     }
 
-    private fun loadSavedModel() {
+    private fun loadSessionModel() {
         viewModelScope.launch {
+            // 1. Try to get the model that the server has configured for this session
+            getSessions().onSuccess { sessions ->
+                val session = sessions.find { it.id == sessionId }
+                if (session != null && session.modelId.isNotBlank()) {
+                    _state.update {
+                        it.copy(selectedModel = session.modelId, selectedProvider = session.providerId)
+                    }
+                    Log.d(TAG, "loadSessionModel ✓ from server: model=${session.modelId} provider=${session.providerId}")
+                    return@launch
+                }
+            }
+            // 2. Fall back to locally saved preference (e.g. user had previously chosen a model)
             val model    = prefs.getString(prefKeyModel)
             val provider = prefs.getString(prefKeyProvider)
             if (!model.isNullOrBlank()) {
                 _state.update { it.copy(selectedModel = model, selectedProvider = provider) }
-                Log.d(TAG, "loadSavedModel ✓ model=$model provider=$provider")
+                Log.d(TAG, "loadSessionModel ✓ from prefs: model=$model provider=$provider")
             }
         }
     }
