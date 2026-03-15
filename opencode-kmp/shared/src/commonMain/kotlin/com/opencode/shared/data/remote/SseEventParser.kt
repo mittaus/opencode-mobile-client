@@ -57,10 +57,10 @@ class SseEventParser {
                     val delta     = p["delta"]?.jsonPrimitive?.content ?: ""
                     ServerEvent.MessagePartDelta(sessionId, messageId, partId, field, delta)
                 }
-                "permission.requested" -> {
+                "permission.asked", "permission.requested" -> {
                     val dto = props?.let { json.decodeFromJsonElement<PermissionRequestDto>(it) }
                         ?: return ServerEvent.Unknown(type, raw)
-                    println("[OC-PARSER] ✓ PermissionRequested id=${dto.id}")
+                    println("[OC-PARSER] ✓ PermissionRequested id=${dto.id} tool=${dto.permission.ifBlank { dto.toolName }} patterns=${dto.patterns}")
                     ServerEvent.PermissionRequested(dto.toDomain())
                 }
                 "todo.updated" -> {

@@ -71,13 +71,18 @@ class SessionRepositoryImpl(
         response: PermissionResponse,
         remember: Boolean,
     ): Result<Unit> = runCatching {
-        api.respondToPermission(
-            sessionId, permissionId,
-            PermissionResponseDto(
-                response = if (response == PermissionResponse.DENY) "deny" else "allow",
-                remember = remember || response == PermissionResponse.ALLOW_ALWAYS,
-            )
+        val dto = PermissionResponseDto(
+            response = when (response) {
+                PermissionResponse.DENY -> "reject"
+                PermissionResponse.ALLOW_ALWAYS -> "always"
+                else -> "once"
+            },
         )
+        println("[OC-PERM] → respondToPermission session=$sessionId permId=$permissionId dto={response=${dto.response}}")
+        val result = api.respondToPermission(sessionId, permissionId, dto)
+        println("[OC-PERM] ✓ respondToPermission result=$result")
         Unit
+    }.onFailure { e ->
+        println("[OC-PERM] ✗ respondToPermission FAILED: ${e::class.simpleName}: ${e.message}")
     }
 }

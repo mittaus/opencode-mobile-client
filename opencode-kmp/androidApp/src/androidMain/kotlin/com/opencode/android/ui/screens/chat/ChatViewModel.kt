@@ -292,19 +292,23 @@ class ChatViewModel(
 
     fun allowPermission(remember: Boolean = false) {
         val perm = _state.value.pendingPermission ?: return
+        val responseType = if (remember) PermissionResponse.ALLOW_ALWAYS else PermissionResponse.ALLOW
+        Log.d(TAG, "allowPermission permId=${perm.id} sessionId=$sessionId remember=$remember responseType=$responseType")
         viewModelScope.launch {
-            respondPermission(
-                sessionId, perm.id,
-                if (remember) PermissionResponse.ALLOW_ALWAYS else PermissionResponse.ALLOW,
-            )
+            respondPermission(sessionId, perm.id, responseType)
+                .onSuccess { Log.d(TAG, "allowPermission ✓ success") }
+                .onFailure { e -> Log.e(TAG, "allowPermission ✗ ${e.message}") }
             _state.update { it.copy(pendingPermission = null) }
         }
     }
 
     fun denyPermission() {
         val perm = _state.value.pendingPermission ?: return
+        Log.d(TAG, "denyPermission permId=${perm.id} sessionId=$sessionId")
         viewModelScope.launch {
             respondPermission(sessionId, perm.id, PermissionResponse.DENY)
+                .onSuccess { Log.d(TAG, "denyPermission ✓ success") }
+                .onFailure { e -> Log.e(TAG, "denyPermission ✗ ${e.message}") }
             _state.update { it.copy(pendingPermission = null, isRunning = false) }
         }
     }

@@ -184,10 +184,17 @@ class OpenCodeApi(private val connection: ServerConnection) {
         sessionId: String,
         permissionId: String,
         dto: PermissionResponseDto,
-    ): Boolean =
-        client.post("/session/$sessionId/permissions/$permissionId") {
+    ): Boolean {
+        val httpResponse = client.post("/session/$sessionId/permissions/$permissionId") {
             setBody(dto)
-        }.body()
+        }
+        println("[OC-API] respondToPermission status=${httpResponse.status.value} session=$sessionId permId=$permissionId")
+        if (!httpResponse.status.isSuccess()) {
+            val body = runCatching { httpResponse.bodyAsText() }.getOrElse { "" }
+            println("[OC-API] respondToPermission ERROR body=$body")
+        }
+        return httpResponse.body()
+    }
 
     // ── Messages ──
     suspend fun getMessages(sessionId: String): List<MessageListItemDto> =

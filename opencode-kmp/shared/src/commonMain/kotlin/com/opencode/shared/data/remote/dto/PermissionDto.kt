@@ -7,6 +7,10 @@ import kotlinx.serialization.Serializable
 data class PermissionRequestDto(
     val id: String,
     @SerialName("sessionID") val sessionId: String = "",
+    // New format: permission.asked
+    val permission: String = "",          // "read" | "write" | "bash" | "web" …
+    val patterns: List<String> = emptyList(),
+    // Legacy format: permission.requested (kept for backward compat)
     @SerialName("toolName") val toolName: String = "",
     val description: String = "",
     val command: String? = null,
@@ -15,6 +19,5 @@ data class PermissionRequestDto(
 
 @Serializable
 data class PermissionResponseDto(
-    val response: String,   // "allow" | "deny"
-    val remember: Boolean = false,
+    val response: String,   // "once" | "always" | "reject"
 )

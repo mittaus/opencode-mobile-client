@@ -364,15 +364,19 @@ private fun MessageRow(
     modifier: Modifier = Modifier,
 ) {
     val isUser = message.role == MessageRole.USER
+
+    // Skip rendering messages with no content and no streaming overlay
+    val effectiveParts = message.parts.ifEmpty {
+        if (streamingOverlay != null) listOf(MessagePart.Text(streamingOverlay)) else emptyList()
+    }
+    if (effectiveParts.isEmpty()) return
+
     val clipboard = LocalClipboardManager.current
     var showCopied by remember { mutableStateOf(false) }
 
     // Full text content of the message for copying
-    val fullText = remember(message.parts, streamingOverlay) {
-        val parts = message.parts.ifEmpty {
-            if (streamingOverlay != null) listOf(MessagePart.Text(streamingOverlay)) else emptyList()
-        }
-        parts.filterIsInstance<MessagePart.Text>().joinToString("\n") { it.text }
+    val fullText = remember(effectiveParts) {
+        effectiveParts.filterIsInstance<MessagePart.Text>().joinToString("\n") { it.text }
     }
 
     LaunchedEffect(showCopied) {
@@ -406,9 +410,7 @@ private fun MessageRow(
             }
         }
         val isStreaming = message.parts.isEmpty() && streamingOverlay != null
-        val partsToShow = message.parts.ifEmpty {
-            if (streamingOverlay != null) listOf(MessagePart.Text(streamingOverlay)) else emptyList()
-        }
+        val partsToShow = effectiveParts
         partsToShow.forEach { part ->
             when (part) {
                 is MessagePart.Text -> {
@@ -690,12 +692,14 @@ private fun PermissionSheet(
                 style = MaterialTheme.typography.bodySmall, color = TextThird)
             Spacer(Modifier.height(16.dp))
             Surface(color = CardDark, shape = RoundedCornerShape(10.dp)) {
-                Text(
-                    request.command ?: request.filePath ?: request.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Green,
-                    modifier = Modifier.padding(14.dp),
-                )
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    val lines = request.patterns.ifEmpty {
+                        listOfNotNull(request.command, request.filePath, request.description.takeIf { it.isNotBlank() })
+                    }
+                    lines.forEach { line ->
+                        Text(line, style = MaterialTheme.typography.bodySmall, color = Green)
+                    }
+                }
             }
             Spacer(Modifier.height(12.dp))
             Surface(
